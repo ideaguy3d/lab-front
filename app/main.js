@@ -22,7 +22,6 @@ var amazonLabButton = document.getElementById('amazon-lab');
 //-- Firebase refs:
 var listeningFirebaseRefs = [];
 
-
 /**
  * Saves a new post to the Firebase DB.
  **/
@@ -48,12 +47,11 @@ function writeNewPost(uid, username, picture, title, body) {
     return firebase.database().ref().update(updates);
 }
 
-
 /**
- * Star/unstar post.
+ * Star/Unstar post.
  **/
 function toggleStar(postRef, uid) {
-    postRef.transaction(function(post) {
+    postRef.transaction(function (post) {
         if (post) {
             if (post.stars && post.stars[uid]) {
                 post.starCount--;
@@ -70,7 +68,6 @@ function toggleStar(postRef, uid) {
     });
 }
 
-
 /**
  * Creates an HTML post element (a literal UI component via mdl).
  **/
@@ -79,10 +76,10 @@ function createPostElement(postId, title, text, author, authorId, authorPic) {
 
     var html =
         '<div class="post mdl-cell mdl-cell--12-col ' +
-        'mdl-cell--6-col-tablet mdl-cell--4-col-desktop mdl-grid mdl-grid--no-spacing">' +
+                'mdl-cell--6-col-tablet mdl-cell--4-col-desktop mdl-grid mdl-grid--no-spacing">' +
         '<div class="mdl-card mdl-shadow--2dp">' +
         '<div class="mdl-card__title mdl-color--light-blue-600 mdl-color-text--white">' +
-        '<h4 class="mdl-card__title-text"></h4>' +
+            '<h4 class="mdl-card__title-text"></h4>' +
         '</div>' +
         '<div class="header">' +
         '<div>' +
@@ -106,11 +103,13 @@ function createPostElement(postId, title, text, author, authorId, authorPic) {
         '</div>' +
         '</div>';
 
+    var ml = "";
+
     // Create the DOM element from the HTML.
     var div = document.createElement('div');
     div.innerHTML = html;
     var postElement = div.firstChild;
-    if (componentHandler) { // perhaps an mdl obj?
+    if (componentHandler) { // an mdl obj
         componentHandler.upgradeElements(postElement.getElementsByClassName('mdl-textfield')[0]);
     }
 
@@ -128,28 +127,28 @@ function createPostElement(postId, title, text, author, authorId, authorPic) {
 
     // Listen for comments.
     var commentsRef = firebase.database().ref('post-comments/' + postId);
-    commentsRef.on('child_added', function(data) {
+    commentsRef.on('child_added', function (data) {
         addCommentElement(postElement, data.key, data.val().text, data.val().author);
     });
 
-    commentsRef.on('child_changed', function(data) {
+    commentsRef.on('child_changed', function (data) {
         setCommentValues(postElement, data.key, data.val().text, data.val().author);
     });
 
-    commentsRef.on('child_removed', function(data) {
+    commentsRef.on('child_removed', function (data) {
         deleteComment(postElement, data.key);
     });
 
     // Listen for likes counts.
     var starCountRef = firebase.database().ref('posts/' + postId + '/starCount');
-    starCountRef.on('value', function(snapshot) {
+    starCountRef.on('value', function (snapshot) {
         updateStarCount(postElement, snapshot.val());
     });
 
 
     // Listen for the starred status.
     var starredStatusRef = firebase.database().ref('posts/' + postId + '/stars/' + uid)
-    starredStatusRef.on('value', function(snapshot) {
+    starredStatusRef.on('value', function (snapshot) {
         updateStarredByCurrentUser(postElement, snapshot.val());
     });
 
@@ -159,7 +158,7 @@ function createPostElement(postId, title, text, author, authorId, authorPic) {
     listeningFirebaseRefs.push(starredStatusRef);
 
     // Create new comment.
-    addCommentForm.onsubmit = function(e) {
+    addCommentForm.onsubmit = function (e) {
         e.preventDefault();
         createNewComment(postId, firebase.auth().currentUser.displayName, uid, commentInput.value);
         commentInput.value = '';
@@ -167,7 +166,7 @@ function createPostElement(postId, title, text, author, authorId, authorPic) {
     };
 
     // Bind starring action.
-    var onStarClicked = function() {
+    var onStarClicked = function () {
         var globalPostRef = firebase.database().ref('/posts/' + postId);
         var userPostRef = firebase.database().ref('/user-posts/' + authorId + '/' + postId);
         toggleStar(globalPostRef, uid);
@@ -179,7 +178,6 @@ function createPostElement(postId, title, text, author, authorId, authorPic) {
     return postElement;
 }
 
-
 /**
  * Writes a new comment for the given post.
  **/
@@ -190,7 +188,6 @@ function createNewComment(postId, username, uid, text) {
         uid: uid
     });
 }
-
 
 /**
  * Updates the starred status of the post.
@@ -205,14 +202,12 @@ function updateStarredByCurrentUser(postElement, starred) {
     }
 }
 
-
 /**
  * Updates the number of stars displayed for a post.
  **/
 function updateStarCount(postElement, nbStart) {
     postElement.getElementsByClassName('star-count')[0].innerText = nbStart;
 }
-
 
 /**
  * Creates an HTML comment element and adds it to the given postElement.
@@ -228,7 +223,6 @@ function addCommentElement(postElement, id, text, author) {
     commentsContainer.appendChild(comment);
 }
 
-
 /**
  * Sets the comment's values in the given postElement.
  **/
@@ -238,7 +232,6 @@ function setCommentValues(postElement, id, text, author) {
     comment.getElementsByClassName('fp-username')[0].innerText = author;
 }
 
-
 /**
  * Deletes the comment of the given ID in the given postElement.
  **/
@@ -247,22 +240,18 @@ function deleteComment(postElement, id) {
     comment.parentElement.removeChild(comment);
 }
 
-
 /**
  * Starts listening for new posts and populates posts lists.
  **/
 function startDatabaseQueries() {
-    // [START my_top_posts_query]
     var myUserId = firebase.auth().currentUser.uid;
     var topUserPostsRef = firebase.database().ref('user-posts/' + myUserId).orderByChild('starCount');
-    // [END my_top_posts_query]
-    // [START recent_posts_query]
+
     var recentPostsRef = firebase.database().ref('posts').limitToLast(100);
-    // [END recent_posts_query]
     var userPostsRef = firebase.database().ref('user-posts/' + myUserId);
 
-    var fetchPosts = function(postsRef, sectionElement) {
-        postsRef.on('child_added', function(data) {
+    var fetchPosts = function (postsRef, sectionElement) {
+        postsRef.on('child_added', function (data) {
             var author = data.val().author || 'Anonymous';
             var containerElement = sectionElement.getElementsByClassName('posts-container')[0];
             containerElement.insertBefore(
@@ -289,10 +278,9 @@ function writeUserData(userId, name, email, imageUrl) {
     firebase.database().ref('users/' + userId).set({
         username: name,
         email: email,
-        profile_picture : imageUrl
+        profile_picture: imageUrl
     });
 }
-
 
 /**
  * Cleanups the UI and removes all Firebase listeners.
@@ -304,19 +292,17 @@ function cleanupUi() {
     userPostsSection.getElementsByClassName('posts-container')[0].innerHTML = '';
 
     // Stop all currently listening Firebase listeners.
-    listeningFirebaseRefs.forEach(function(ref) {
+    listeningFirebaseRefs.forEach(function (ref) {
         ref.off();
     });
     listeningFirebaseRefs = [];
 }
-
 
 /**
  * The ID of the currently signed-in User. We keep track of this to detect Auth state change
  * events that are just programmatic token refreshes, but not a User status change.
  **/
 var currentUID;
-
 
 /**
  * Triggers every time there is a change in the Firebase auth state
@@ -340,15 +326,13 @@ function onAuthStateChanged(user) {
     }
 }
 
-
-
 /**
  * Creates a new post for the current user.
- **/
+**/
 function newPostForCurrentUser(title, text) {
     // [START single_value_read]
     var userId = firebase.auth().currentUser.uid;
-    return firebase.database().ref('/users/' + userId).once('value').then(function(snapshot) {
+    return firebase.database().ref('/users/' + userId).once('value').then(function (snapshot) {
         var username = snapshot.val().username;
         // [START_EXCLUDE]
         return writeNewPost(firebase.auth().currentUser.uid, username,
@@ -358,7 +342,6 @@ function newPostForCurrentUser(title, text) {
     });
     // [END single_value_read]
 }
-
 
 /** tabs?
  * Displays the given section element and changes styling of the given button.
@@ -388,15 +371,15 @@ function showSection(sectionElement, buttonElement) {
 // Bindings on load.
 window.addEventListener('load', // param 1
     //param 2
-    function() {
+    function () {
         // Bind Sign in button.
-        signInButton.addEventListener('click', function() {
+        signInButton.addEventListener('click', function () {
             var provider = new firebase.auth.GoogleAuthProvider();
             firebase.auth().signInWithPopup(provider);
         });
 
         // Bind Sign out button.
-        signOutButton.addEventListener('click', function() {
+        signOutButton.addEventListener('click', function () {
             firebase.auth().signOut();
         });
 
@@ -404,12 +387,12 @@ window.addEventListener('load', // param 1
         firebase.auth().onAuthStateChanged(onAuthStateChanged);
 
         // Saves message on form submit.
-        messageForm.onsubmit = function(e) {
+        messageForm.onsubmit = function (e) {
             e.preventDefault();
             var text = messageInput.value;
             var title = titleInput.value;
             if (text && title) {
-                newPostForCurrentUser(title, text).then(function() {
+                newPostForCurrentUser(title, text).then(function () {
                     myPostsMenuButton.click();
                 });
                 messageInput.value = '';
@@ -420,21 +403,21 @@ window.addEventListener('load', // param 1
         //------------------------------------------------------------------
         // Bind menu buttons. THESE ARE THE "TABS" <------------------------
         //------------------------------------------------------------------
-        recentMenuButton.onclick = function() {
+        recentMenuButton.onclick = function () {
             showSection(recentPostsSection, recentMenuButton);
         };
-        myPostsMenuButton.onclick = function() {
+        myPostsMenuButton.onclick = function () {
             showSection(userPostsSection, myPostsMenuButton);
         };
-        myTopPostsMenuButton.onclick = function() {
+        myTopPostsMenuButton.onclick = function () {
             showSection(topUserPostsSection, myTopPostsMenuButton);
         };
-        amazonLabButton.onclick = function() {
+        amazonLabButton.onclick = function () {
             showSection(amazonLabSection, amazonLabButton);
         };
 
         // "Create New Posts" button:
-        addButton.onclick = function() {
+        addButton.onclick = function () {
             showSection(addPost);
             messageInput.value = '';
             titleInput.value = '';
