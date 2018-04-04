@@ -1,3 +1,42 @@
-<div>
+<section class="card register">
     <h1>LAB 916 Amazon Ads API lab</h1>
-</div>
+
+    <form name="myform"
+          ng-submit="register()"
+          novalidate>
+
+        <fieldset>
+             <input type="text" name="firstname" placeholder="Record Type"
+                   ng-model="user.firstname" ng-required="true">
+            <p class="error validationerror"
+               ng-show="myform.firstname.$invalid && myform.firstname.$touched">
+                Field required</p>
+
+            <input type="text" name="lastname" placeholder="Campaign Type"
+                   ng-model="user.lastname" ng-required="true">
+            <p class="error validationerror"
+               ng-show="myform.lastname.$invalid && myform.lastname.$touched">
+                Field required
+            </p>
+
+            <input type="text" name="email" placeholder="Metrics"
+                   ng-model="user.email" ng-required="true">
+            <p class="error validationerror"
+               ng-show="myform.email.$invalid && myform.email.$touched">
+                Field required
+            </p>
+
+            <input type="text" name="password" placeholder="Segment"
+                   ng-model="user.password" ng-required="true">
+            <p class="error validationerror"
+               ng-show="myform.password.$invalid && myform.email.$touched">
+                Field required</p>
+
+        </fieldset>
+
+        <button type="submit" class="btn"
+                ng-disabled="myform.$invalid">
+            Make Request
+        </button>
+    </form>
+</section>

@@ -5,8 +5,8 @@ angular.module('labApp.amazon-lab', ['ngRoute'])
             controller: 'AmazonLabCtrl'
         })
     }])
-    .controller('AmazonLabCtrl', [AmazonLabCtrlClass]);
+    .controller('AmazonLabCtrl', ['$http', AmazonLabCtrlClass]);
 
-function AmazonLabCtrlClass() {
+function AmazonLabCtrlClass($http) {
 
 }
