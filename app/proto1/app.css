@@ -331,7 +331,7 @@ h3 {
 }
 
 #lab-view {
-    display: inline-block;
+    /*display: inline-block;*/
     padding: 0 2rem;
 }
 
