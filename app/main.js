@@ -76,10 +76,10 @@ function createPostElement(postId, title, text, author, authorId, authorPic) {
 
     var html =
         '<div class="post mdl-cell mdl-cell--12-col ' +
-                'mdl-cell--6-col-tablet mdl-cell--4-col-desktop mdl-grid mdl-grid--no-spacing">' +
+        'mdl-cell--6-col-tablet mdl-cell--4-col-desktop mdl-grid mdl-grid--no-spacing">' +
         '<div class="mdl-card mdl-shadow--2dp">' +
         '<div class="mdl-card__title mdl-color--light-blue-600 mdl-color-text--white">' +
-            '<h4 class="mdl-card__title-text"></h4>' +
+        '<h4 class="mdl-card__title-text"></h4>' +
         '</div>' +
         '<div class="header">' +
         '<div>' +
@@ -102,8 +102,6 @@ function createPostElement(postId, title, text, author, authorId, authorPic) {
         '</form>' +
         '</div>' +
         '</div>';
-
-    var ml = "";
 
     // Create the DOM element from the HTML.
     var div = document.createElement('div');
@@ -145,7 +143,6 @@ function createPostElement(postId, title, text, author, authorId, authorPic) {
         updateStarCount(postElement, snapshot.val());
     });
 
-
     // Listen for the starred status.
     var starredStatusRef = firebase.database().ref('posts/' + postId + '/stars/' + uid)
     starredStatusRef.on('value', function (snapshot) {
@@ -176,6 +173,28 @@ function createPostElement(postId, title, text, author, authorId, authorPic) {
     star.onclick = onStarClicked;
 
     return postElement;
+}
+
+/**
+ * Create a simple form for testing the Amazon Ads API
+ **/
+function createAmazonLabElement() {
+    let html = `
+     <div>
+        <div>
+            <form>
+                <input type="text" placeholder="client name">
+                <input type="text" placeholder="api key">
+            </form>
+        </div>
+    </div>`;
+
+    let div = document.createElement('div');
+    div.innerHTML = html;
+    let postElement = div.firstChild;
+    if(componentHandler) {
+        componentHandler.upgradeElements(postElement);
+    }
 }
 
 /**
@@ -245,18 +264,37 @@ function deleteComment(postElement, id) {
  **/
 function startDatabaseQueries() {
     var myUserId = firebase.auth().currentUser.uid;
-    var topUserPostsRef = firebase.database().ref('user-posts/' + myUserId).orderByChild('starCount');
 
+    var topUserPostsRef = firebase.database().ref('user-posts/' + myUserId).orderByChild('starCount');
     var recentPostsRef = firebase.database().ref('posts').limitToLast(100);
     var userPostsRef = firebase.database().ref('user-posts/' + myUserId);
+    let amazonLabRef = firebase.database().ref('amazon-lab');
 
     var fetchPosts = function (postsRef, sectionElement) {
         postsRef.on('child_added', function (data) {
             var author = data.val().author || 'Anonymous';
             var containerElement = sectionElement.getElementsByClassName('posts-container')[0];
-            containerElement.insertBefore(
-                createPostElement(data.key, data.val().title, data.val().body, author, data.val().uid, data.val().authorPic),
-                containerElement.firstChild);
+            if (sectionElement.id === "amazon-lab-section") {
+                containerElement.insertBefore(
+                    createPostElement(
+                        // 3 params
+                        data.key, data.val().title, data.val().body,
+                        // 3 more params
+                        author, data.val().uid, data.val().authorPic),
+                    // last param
+                    containerElement.firstChild
+                );
+            } else {
+                containerElement.insertBefore(
+                    createPostElement(
+                        // 3 params
+                        data.key, data.val().title, data.val().body,
+                        // 3 more params
+                        author, data.val().uid, data.val().authorPic),
+                        // last param
+                        containerElement.firstChild
+                );
+            }
         });
     };
 
@@ -264,6 +302,7 @@ function startDatabaseQueries() {
     fetchPosts(topUserPostsRef, topUserPostsSection);
     fetchPosts(recentPostsRef, recentPostsSection);
     fetchPosts(userPostsRef, userPostsSection);
+    fetchPosts(amazonLabRef, amazonLabSection);
 
     // Keep track of all Firebase refs we are listening to.
     listeningFirebaseRefs.push(topUserPostsRef);
@@ -313,6 +352,7 @@ function onAuthStateChanged(user) {
     if (user && currentUID === user.uid || !user && currentUID === null) {
         return;
     }
+
     currentUID = user ? user.uid : null;
 
     cleanupUi();
@@ -328,7 +368,7 @@ function onAuthStateChanged(user) {
 
 /**
  * Creates a new post for the current user.
-**/
+ **/
 function newPostForCurrentUser(title, text) {
     // [START single_value_read]
     var userId = firebase.auth().currentUser.uid;
